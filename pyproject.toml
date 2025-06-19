@@ -1,0 +1,25 @@
+[project]
+name = "codeyowon"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "rich>=14.0.0",
+    "smolagents[mcp,openai]>=1.18.0",
+    "typer>=0.16.0",
+]
+
+
+[project.scripts]
+yowon = "yowon.cli:cli"
+yowon-mcp = "yowon.server:main"
+
+[tool.uv]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.402",
+    "pytest>=8.4.1",
+    "ruff>=0.12.0",
+]
+# This section allows `uv` to create an isolated environment
