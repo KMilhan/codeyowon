@@ -1,10 +1,19 @@
 # (Code)yowon
 
-`(Code)yowon` is a tiny Python project built with [smallagents](https://github.com/huggingface/smolagents). It exposes a
-CLI
-and an MCP server that used to be supported by OpenAI via [`codex`](https://github.com/openai/codex).
+`(Code)yowon` is a tiny Python project built with [smallagents](https://github.com/huggingface/smolagents). It is heavily inspired by Codex CLI and exposes a
+CLI and an MCP server that used to be supported by OpenAI via [`codex`](https://github.com/openai/codex)
 
-This program uses `Typer` and `Rich` to keep CLI look "ok", but tries to stay responsive.
+This program uses `Typer` and `Rich` to keep CLI look "ok", and `Textual` for TUI, but tries to stay responsive.
+
+## Features
+
+- CLI interface for interacting with AI models
+- Terminal user interface powered by Textual
+- MCP server for agent coordination
+- Flexible configuration system
+- Support for multiple AI models and endpoints
+- Python and shell command execution capabilities
+- Role-based agent orchestration
 
 ## Usage
 
@@ -80,28 +89,4 @@ role = "Careful reasoning"
 [agents.python]
 type = "python"
 role = "Run Python snippets"
-
-[agents.shell]
-type = "shell"
-role = "Execute shell commands"
 ```
-
-Agents defined under `[agents.*]` are exposed by `yowon demo` and `yowon demo-serve`.
-When `role` is provided, it is stored in the multi-session so an orchestrator LLM
-can reason about each agent's purpose.
-
-To let a model route prompts automatically, define an `[orchestrator]` section:
-
-```toml
-[orchestrator]
-model = "o3"
-```
-
-The demo commands will then load an `OrchestratorSession` that asks the
-orchestrator which agent to use for each prompt.
-
-## Development
-
-### Test
-
-`uv run pytest`
