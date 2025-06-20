@@ -6,13 +6,16 @@ requires-python = ">=3.13"
 dependencies = [
     "rich>=14.0.0",
     "smolagents[mcp,openai]>=1.18.0",
+    "fastmcp>=2.8.1",
     "typer>=0.16.0",
+    "textual>=0.45.0",
 ]
 
 
 [project.scripts]
 yowon = "yowon.cli:cli"
 yowon-mcp = "yowon.server:main"
+yowon-tui = "yowon.tui:main"
 
 [tool.uv]
 
@@ -22,4 +25,3 @@ dev = [
     "pytest>=8.4.1",
     "ruff>=0.12.0",
 ]
-# This section allows `uv` to create an isolated environment
