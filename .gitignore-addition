@@ -1,0 +1,15 @@
+# Environment variables
+.env
+
+# Makefile generated files
+*.make-*
+
+# Dependency directories
+venv/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/

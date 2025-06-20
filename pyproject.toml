@@ -2,6 +2,8 @@
 name = "codeyowon"
 version = "0.1.0"
 description = "Add your description here"
+authors = [{ name = "Your Name" }]
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "rich>=14.0.0",
@@ -18,6 +20,31 @@ yowon-mcp = "yowon.server:main"
 yowon-tui = "yowon.tui:main"
 
 [tool.uv]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["tests/**"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D", "ANN"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pyright]
+typeCheckingMode = "strict"
+reportImportCycles = true
+reportUnknownParameterType = true
+reportUnknownVariableType = true
+reportUnknownMemberType = true
+reportMissingTypeStubs = true
+reportPrivateUsage = true
+exclude = ["tests/**"]
 
 [dependency-groups]
 dev = [
