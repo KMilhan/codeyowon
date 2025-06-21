@@ -1,13 +1,13 @@
 [project]
 name = "codeyowon"
 version = "0.1.0"
-description = "Add your description here"
-authors = [{ name = "Your Name" }]
+description = "Coding agent for terminal or mcp."
+authors = [{ name = "Milhan Kim", email = "kimmilhan@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "rich>=14.0.0",
-    "smolagents[mcp,openai]>=1.18.0",
+    "smolagents[docker,e2b,gradio,litellm,mcp,openai,toolkit,vision]>=1.18.0",
     "fastmcp>=2.8.1",
     "typer>=0.16.0",
     "textual>=0.45.0",
@@ -20,15 +20,18 @@ yowon-mcp = "yowon.server:main"
 yowon-tui = "yowon.tui:main"
 
 [tool.uv]
+package = true
 
 [tool.ruff]
 line-length = 88
 target-version = "py313"
 exclude = ["tests/**"]
+fix = true
+unsafe-fixes = true
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D", "ANN"]
+ignore = ["D", "ANN", "B008"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -42,9 +45,14 @@ reportImportCycles = true
 reportUnknownParameterType = true
 reportUnknownVariableType = true
 reportUnknownMemberType = true
-reportMissingTypeStubs = true
 reportPrivateUsage = true
+include = ["yowon"]
 exclude = ["tests/**"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.13"
+pythonPlatform = "Linux"
+verboseOutput = true
 
 [dependency-groups]
 dev = [
