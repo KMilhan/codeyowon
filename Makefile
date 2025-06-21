@@ -3,6 +3,7 @@
 PYTHON = python
 PIP = pip
 UV = uv
+UVR = uv run
 PKG_NAME = codeyowon
 
 help:
@@ -25,29 +26,23 @@ dev-install:
 	$(UV) pip install -e '.[dev]'
 
 test:
-	pytest
+	$(UVR) pytest
 
 lint:
-	ruff check .
-	pyright .
+	$(UVR) ruff check .
+	$(UVR) pyright .
 
 format:
-	ruff format .
-
-run-chat:
-	$(PYTHON) -m yowon chat "hello"
+	$(UVR) ruff format .
 
 run-tui:
-	$(PYTHON) -m yowon.tui
+	$(UVR) $(PYTHON) -m yowon
 
 run-mcp:
-	$(PYTHON) -m yowon.server
+	$(UVR) $(PYTHON) -m yowon.server
 
-run-demo:
-	$(PYTHON) -m yowon demo
-
-run-demo-tui:
-	$(PYTHON) -m yowon demo-tui
+build:
+	$(UV) build
 
 clean:
 	rm -rf build/ dist/ *.egg-info/ __pycache__/ .pytest_cache/ .ruff_cache/
