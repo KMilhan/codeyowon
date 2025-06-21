@@ -72,7 +72,7 @@ def test_role_in_prompt(monkeypatch):
 
     monkeypatch.setattr(agent, "OpenAIServerModel", dummy_model)
     monkeypatch.setattr(agent, "CodeAgent", DummyAgent)
-    ag = agent.create_agent(role="math")
+    ag = agent.create_agent()
     assert ag.prompt == agent.BASE_PROMPTS["system_prompt"]
 
 
@@ -93,6 +93,7 @@ def test_multi_session_dispatch(monkeypatch):
     class Dummy(agent.ChatSession):
         def __init__(self, name):
             self.name = name
+
         def ask(self, prompt: str) -> str:
             return f"{self.name}:{prompt}"
 
@@ -127,30 +128,6 @@ def test_multi_session_from_config(monkeypatch):
     assert multi.get_role("x") == "main"
 
 
-def test_orchestrator_session():
-    class Dummy(agent.ChatSession):
-        def __init__(self, name):
-            self.name = name
-
-        def ask(self, prompt: str) -> str:
-            return f"{self.name}:{prompt}"
-
-    class Orchestrator(agent.ChatSession):
-        def __init__(self, target):
-            self.target = target
-
-        def ask(self, prompt: str) -> str:
-            return self.target
-
-    multi = agent.MultiChatSession(
-        {"cold": Dummy("cold"), "hot": Dummy("hot")},
-        {"cold": "cool", "hot": "warm"},
-    )
-    orch = Orchestrator("hot")
-    session = agent.OrchestratorSession(orch, multi)
-    assert session.ask("hello") == "hot:hello"
-
-
 def test_multi_agent_interaction(monkeypatch):
     class Dummy(agent.ChatSession):
         def __init__(self, model_id="llm", **kwargs):
@@ -171,21 +148,3 @@ def test_multi_agent_interaction(monkeypatch):
     assert multi.ask("print(2+3)", "py") == "5"
     assert multi.ask("echo hi", "sh") == "hi"
     assert multi.ask("hello", "llm") == "codex1:hello"
-
-
-def test_orchestrated_session_from_config(monkeypatch):
-    class Dummy:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def ask(self, prompt: str) -> str:
-            return "sh"
-
-    monkeypatch.setattr(agent, "ChatSession", Dummy)
-    config = {
-        "orchestrator": {"model": "o3"},
-        "agents": {"sh": {"type": "shell"}},
-    }
-    session = agent.create_orchestrated_session(config)
-    assert isinstance(session, agent.OrchestratorSession)
-    assert session.ask("echo ok") == "ok"

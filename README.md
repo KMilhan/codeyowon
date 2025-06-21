@@ -1,6 +1,7 @@
 # (Code)yowon
 
-`(Code)yowon` is a tiny Python project built with [smallagents](https://github.com/huggingface/smolagents). It is heavily inspired by Codex CLI and exposes a
+`(Code)yowon` is a tiny Python project built with [smallagents](https://github.com/huggingface/smolagents). It is
+heavily inspired by Codex CLI and exposes a
 CLI and an MCP server that used to be supported by OpenAI via [`codex`](https://github.com/openai/codex)
 
 This program uses `Typer` and `Rich` to keep CLI look "ok", and `Textual` for TUI, but tries to stay responsive.
@@ -29,28 +30,10 @@ For an interactive conversation that keeps context between prompts:
 yowon
 ```
 
-For a terminal user interface powered by Textual:
-
-```bash
-yowon tui
-```
-
-For a playground with multiple agents:
-
-```bash
-yowon demo
-```
-
 ### MCP Server
 
 ```bash
-yowon serve
-```
-
-A demo server with multiple agents can be launched with:
-
-```bash
-yowon demo-serve
+yowon mcp
 ```
 
 This will start a FastMCP server over stdio so it can cooperate with other agents.
@@ -59,7 +42,7 @@ All commands accept `--api-base` to specify an alternative OpenAI-compatible end
 To pass extra HTTP headers (for Enterprise or custom deployments), repeat `--header NAME:VALUE`:
 
 ```bash
-yowon run --header "X-My-Header: 1" "Hello"
+yowon mcp --header "X-My-Header: 1" "Hello"
 ```
 
 You can tweak model behavior as well:

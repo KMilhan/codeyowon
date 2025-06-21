@@ -1,22 +1,25 @@
 from __future__ import annotations
 
-import os
 import importlib.resources
-import yaml
-from smolagents import CodeAgent, OpenAIServerModel
+import os
 import subprocess
 import sys
 
+import yaml
+from smolagents import CodeAgent, OpenAIServerModel
+
 DEFAULT_MODEL = "codex-mini-latest"
 
-PROMPT_PATH = importlib.resources.files("smolagents.prompts").joinpath("code_agent.yaml")
+PROMPT_PATH = importlib.resources.files("smolagents.prompts").joinpath(
+    "code_agent.yaml",
+)
 BASE_PROMPTS: dict[str, str] = yaml.safe_load(PROMPT_PATH.read_text())
 
 
 class ChatSession:
     """Keep conversation state across multiple agent runs."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         model_id: str = DEFAULT_MODEL,
         api_key: str | None = None,
@@ -50,7 +53,7 @@ class ChatSession:
         self._reset = True
 
 
-def create_agent(
+def create_agent(  # noqa: PLR0913
     model_id: str = DEFAULT_MODEL,
     api_key: str | None = None,
     api_base: str | None = None,
@@ -60,7 +63,6 @@ def create_agent(
     wire: str | None = None,
     top_p: float | None = None,
     max_tokens: int | None = None,
-    role: str | None = None,
 ) -> CodeAgent:
     """Return a `CodeAgent` using the OpenAI model."""
     api_key = api_key or os.getenv("OPENAI_API_KEY")
@@ -91,7 +93,11 @@ def create_agent(
 class MultiChatSession:
     """Hold several chat sessions and dispatch queries by name."""
 
-    def __init__(self, sessions: dict[str, ChatSession], roles: dict[str, str] | None = None):
+    def __init__(
+        self,
+        sessions: dict[str, ChatSession],
+        roles: dict[str, str] | None = None,
+    ):
         self.sessions = sessions
         self.roles = roles or {}
 
@@ -115,11 +121,15 @@ class PythonAgent:
 
     def ask(self, prompt: str) -> str:
         try:
-            result = subprocess.run(
-                [sys.executable, "-c", prompt], capture_output=True, text=True, timeout=10
+            result = subprocess.run(  # noqa: S603
+                [sys.executable, "-c", prompt],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
             )
             return result.stdout.strip() or result.stderr.strip()
-        except Exception as exc:  # pragma: no cover - subprocess errors
+        except Exception as exc:  # noqa: BLE001 pragma: no cover - subprocess errors
             return str(exc)
 
 
@@ -128,10 +138,18 @@ class ShellAgent:
 
     def ask(self, prompt: str) -> str:
         try:
-            result = subprocess.run(prompt, shell=True, capture_output=True, text=True, timeout=10)
+            result = subprocess.run(  # noqa: S602
+                prompt,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
             return result.stdout.strip() or result.stderr.strip()
-        except Exception as exc:  # pragma: no cover - subprocess errors
+        except Exception as exc:  # noqa: BLE001 pragma: no cover - subprocess errors
             return str(exc)
+
 
 def create_multi_session(
     config: dict[str, object],
@@ -173,75 +191,4 @@ def create_multi_session(
 
     return MultiChatSession(sessions, roles)
 
-
-class OrchestratorSession:
-    """Use one agent to route prompts to a multi-agent setup."""
-
-    def __init__(self, orchestrator: ChatSession, multi: MultiChatSession) -> None:
-        self.orchestrator = orchestrator
-        self.multi = multi
-
-    def ask(self, prompt: str) -> str:
-        summary = "\n".join(
-            f"{name}: {role}" for name, role in self.multi.roles.items()
-        )
-        choice = self.orchestrator.ask(
-            f"Agents:\n{summary}\nUser:{prompt}\nPick agent name"
-        ).strip()
-        return self.multi.ask(prompt, choice)
-
-    def options(self) -> list[str]:
-        return self.multi.options()
-
-
-def create_orchestrated_session(
-    config: dict[str, object],
-    *,
-    api_key: str | None = None,
-    api_base: str | None = None,
-    headers: dict[str, str] | None = None,
-) -> OrchestratorSession:
-    """Build an ``OrchestratorSession`` from configuration."""
-
-    orchestrator_cfg = config.get("orchestrator", {})
-    orchestrator = ChatSession(
-        model_id=orchestrator_cfg.get("model", DEFAULT_MODEL),
-        api_key=orchestrator_cfg.get("api_key", api_key),
-        api_base=orchestrator_cfg.get("api_base", api_base),
-        headers={**(headers or {}), **orchestrator_cfg.get("headers", {})},
-        temperature=orchestrator_cfg.get("temperature"),
-        reasoning_effort=orchestrator_cfg.get("reasoning_effort"),
-        wire=orchestrator_cfg.get("wire"),
-        top_p=orchestrator_cfg.get("top_p"),
-        max_tokens=orchestrator_cfg.get("max_tokens"),
-    )
-
-    multi = create_multi_session(
-        config,
-        api_key=api_key,
-        api_base=api_base,
-        headers=headers,
-    )
-
-    return OrchestratorSession(orchestrator, multi)
-
-
-def create_demo_session(
-    *, api_key: str | None = None, api_base: str | None = None, headers: dict[str, str] | None = None
-) -> MultiChatSession:
-    """Return a ``MultiChatSession`` with a selection of models."""
-
-    spec = {
-        "agents": {
-            "o3-cold": {"model": "o3", "temperature": 0.0, "role": "Careful reasoning"},
-            "o3-hot": {"model": "o3", "temperature": 0.7, "role": "Creative ideas"},
-            "codex-mini-latest": {"model": "codex-mini-latest"},
-            "codex1": {"model": "codex1"},
-            "llama": {"model": "llama"},
-            "python": {"type": "python", "role": "Run Python snippets"},
-            "shell": {"type": "shell", "role": "Execute shell commands"},
-        }
-    }
-
-    return create_multi_session(spec, api_key=api_key, api_base=api_base, headers=headers)
 

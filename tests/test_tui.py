@@ -2,9 +2,11 @@ import anyio
 from textual.widgets import Input, Static
 from yowon import tui
 
+
 class DummySession:
     def __init__(self, **kwargs):
         pass
+
     def ask(self, prompt: str) -> str:
         return f"echo:{prompt}"
 
@@ -22,22 +24,3 @@ def test_yowon_app_responds(monkeypatch):
             assert "echo:hello" in str(log.renderable)
 
     anyio.run(run)
-
-
-def test_demo_tui_selects_orchestrator(monkeypatch):
-    recorded = {}
-    class DummyApp:
-        def __init__(self, session):
-            recorded["session"] = session
-        def run(self):
-            recorded["run"] = True
-    monkeypatch.setattr(tui, "DemoApp", DummyApp)
-    def build(config, **kwargs):
-        recorded["config"] = config
-        recorded["kwargs"] = kwargs
-        return "session"
-    monkeypatch.setattr(tui, "create_orchestrated_session", build)
-    tui.demo_tui(api_key="k", config={"orchestrator": {"model": "o3"}})
-    assert recorded["session"] == "session"
-    assert recorded["kwargs"]["api_key"] == "k"
-    assert recorded["run"]

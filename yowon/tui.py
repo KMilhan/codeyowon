@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from textual.app import App, ComposeResult
 from textual.containers import Container
-from textual.widgets import Input, Static, Select
 from textual.reactive import reactive
+from textual.widgets import Input, Static
 
-from yowon.agent import DEFAULT_MODEL, ChatSession, MultiChatSession, OrchestratorSession, create_multi_session, \
-    create_demo_session, create_orchestrated_session
+from yowon.agent import (
+    DEFAULT_MODEL,
+    ChatSession,
+)
 
 
 class ChatView(Container):
@@ -36,7 +38,7 @@ class YowonApp(App):
     }
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         model: str = DEFAULT_MODEL,
         api_key: str | None = None,
@@ -74,39 +76,9 @@ class YowonApp(App):
         self.query_one(ChatView).add_message(answer)
 
 
-class DemoApp(App):
-    CSS = YowonApp.CSS
-
-    def __init__(self, session: MultiChatSession | OrchestratorSession) -> None:
-        super().__init__()
-        self.session = session
-
-    def compose(self) -> ComposeResult:
-        if isinstance(self.session, OrchestratorSession):
-            yield ChatView()
-        else:
-            yield Select(
-                [(name, name) for name in self.session.options()],
-                id="target",
-            )
-            yield ChatView()
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        if not event.value.strip():
-            return
-        prompt = event.value
-        self.query_one(Input).value = ""
-        if isinstance(self.session, OrchestratorSession):
-            self.query_one(ChatView).add_message(f"> {prompt}")
-            answer = self.session.ask(prompt)
-        else:
-            target = self.query_one("#target", Select).value
-            self.query_one(ChatView).add_message(f"[{target}] > {prompt}")
-            answer = self.session.ask(prompt, target)
-        self.query_one(ChatView).add_message(answer)
 
 
-def main(
+def main(  # noqa: PLR0913
     model: str = DEFAULT_MODEL,
     api_key: str | None = None,
     api_base: str | None = None,
@@ -129,35 +101,6 @@ def main(
         max_tokens=max_tokens,
     ).run()
 
-
-def demo_tui(
-    api_key: str | None = None,
-    api_base: str | None = None,
-    headers: dict[str, str] | None = None,
-    config: dict[str, object] | None = None,
-) -> None:
-    """Run the Textual interface with the demo agents."""
-    if config and config.get("orchestrator"):
-        session = create_orchestrated_session(
-            config,
-            api_key=api_key,
-            api_base=api_base,
-            headers=headers,
-        )
-    elif config and config.get("agents"):
-        session = create_multi_session(
-            config,
-            api_key=api_key,
-            api_base=api_base,
-            headers=headers,
-        )
-    else:
-        session = create_demo_session(
-            api_key=api_key,
-            api_base=api_base,
-            headers=headers,
-        )
-    DemoApp(session).run()
 
 
 if __name__ == "__main__":
